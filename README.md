@@ -2,7 +2,7 @@
 
 **profile_t** is a Python module for calculating confidence intervals of nonlinear regression models.
 
-Quantification of uncertainty of regression models is important for the interpretation of models and for decision making. The linear approximation and so-called likelihood profiles are well-known possibilities for the calculation of confidence and prediction intervals for nonlinear regression models.
+Quantification of uncertainty of regression models is important for the interpretation of models and for decision making. The linear approximation and likelihood profiles are well-known possibilities for the calculation of confidence and prediction intervals for nonlinear regression models.
 
 This module allows the calculation of confidence regions of the numerical parameters and the prediction interval for any nonlinear regression model compatible with sympy. It provides helper functions to build the sympy-expressions from a string description of the model and some support plots to analyse the model.
 
