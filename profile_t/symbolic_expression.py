@@ -271,7 +271,7 @@ def is_div_with_add(expr):
             and expr.args[0].is_Add)
 
 
-def get_coefs_from_expr(expr, i, can_replace):
+def get_coefs_from_expr(expr, i, can_replace, apply_simpl):
     '''
     Given an expression, an index i,
     and a flag if we can replace it or not,
@@ -288,6 +288,8 @@ def get_coefs_from_expr(expr, i, can_replace):
          next index sequence
     can_replace : bool
                    if we can safely replace the numerical value
+    apply_simpl : bool
+                   whether to apply simplifications or not (default True)
 
     Returns
     -------
@@ -322,16 +324,17 @@ def get_coefs_from_expr(expr, i, can_replace):
                       (any(a.is_Number for a in expr.args) and
                        any(a.is_Add for a in expr.args) or
                        any(is_div_with_add(a) for a in expr.args)))
+    cannot_replace = apply_simpl and cannot_replace
 
     # For every argument of the current operator
     for arg in expr.args:
         # if it is a number AND cannot replace,
         # call recursively with a False flag
         if arg.is_Number and cannot_replace:
-            ts, ss, new_arg, i = get_coefs_from_expr(arg, i, False)
+            ts, ss, new_arg, i = get_coefs_from_expr(arg, i, False, apply_simpl)
         # otherwise, just call it with True
         else:
-            ts, ss, new_arg, i = get_coefs_from_expr(arg, i, True)
+            ts, ss, new_arg, i = get_coefs_from_expr(arg, i, True, apply_simpl)
 
         # merge all the results and return
         coefs += ts
@@ -340,7 +343,7 @@ def get_coefs_from_expr(expr, i, can_replace):
     return coefs, symbs, expr.func(*new_args), i
 
 
-def create_symbolic(model, x, y):
+def create_symbolic(model, x, y, apply_simpl=True):
     '''
     Gets an string representing the model and
     the data points and returns either SymExpr or
@@ -360,6 +363,8 @@ def create_symbolic(model, x, y):
          input variables
     y : array_like
          target values
+    apply_simpl : bool
+                   whether to apply simplifications or not (default True)
 
     Returns
     -------
@@ -367,7 +372,7 @@ def create_symbolic(model, x, y):
     with ProfileT
     '''
     expr = sym.sympify(model)
-    theta, x_vars, expr, n_thetas = get_coefs_from_expr(expr, 0, True)
+    theta, x_vars, expr, n_thetas = get_coefs_from_expr(expr, 0, True, apply_simpl)
     ixs = [int(xv[1:]) for xv in np.unique(x_vars)]
     x_vars = [sym.Symbol(xs) for xs in np.unique(x_vars)]
     theta_vars = [sym.Symbol(f"theta{i}") for i in range(n_thetas)]

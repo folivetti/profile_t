@@ -16,8 +16,12 @@ import scipy.linalg as la
 from scipy.optimize import least_squares
 from scipy.interpolate import CubicSpline
 from scipy import stats
+import warnings
 
-from .either import Either, seq_either
+from either import Either, seq_either
+
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning) 
 
 __all__ = [
     "ProfileT",
@@ -171,7 +175,7 @@ class ProfileT:
         '''
 
         def fixed_jac(theta):
-            J = self.model.jacr(theta)
+            J = self.model.jacr(idx)(theta)
             J[:, 0] = 0.0
             return J
 
@@ -199,7 +203,7 @@ class ProfileT:
         ix_tau = tau.argsort()
 
         return Either(right=(tau[ix_tau],
-                             np.array(m_1 + [self.theta[idx]] + m_2)[ix_tau],
+                             np.array(m_1 + [theta_cond[0]] + m_2)[ix_tau],
                              np.array(deltas_1 + [0] + deltas_2)[ix_tau]))
 
     def points_from_delta_pred(self, delta, idx, fixed_jac, kmax):
@@ -292,25 +296,12 @@ class ProfileT:
         print(f"theta: {self.theta}")
         print(f"SSR {self.ssr} s^2 {self.s*self.s}")
 
-        if use_linear:
-            lower, upper = self.get_params_intervals(alpha)
-            print("theta\tEstimate\tStd. Error.\tLower\t\tUpper\t\t"
-                  "Corr. Matrix")
-            for i in range(self.model.n):
-                print(f"{i}\t{self.theta[i]:e}\t{self.se[i]:e}\t{lower[i]:e}\t"
-                      f"{upper[i]:e}\t{np.round(self.corr[i,:],2)}")
-
-        else:
-            t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
-
-            print("\n\nprofile t-standard")
-            print("theta\tEstimate\tStd. Error.\tLower\t\tUpper\t\t"
-                  "Corr. Matrix")
-            for i in range(self.model.n):
-                lower = self.spline_tau2theta[i](-t_dist)
-                upper = self.spline_tau2theta[i](t_dist)
-                print(f"{i}\t{self.theta[i]:e}\t{self.se[i]:e}\t"
-                      f"{lower:e}\t{upper:e}\t{np.round(self.corr[i,:],2)}")
+        lower, upper = self.get_params_intervals(alpha, use_linear)
+        print("theta\tEstimate\tStd. Error.\tLower\t\tUpper\t\t"
+              "Corr. Matrix")
+        for i in range(self.model.n):
+            print(f"{i}\t{self.theta[i]:e}\t{self.se[i]:e}\t"
+                  f"{lower[i]:e}\t{upper[i]:e}\t{np.round(self.corr[i,:],2)}")
 
     def report_prediction_interval(self, ixs, alpha, use_linear=False):
         '''
@@ -326,25 +317,14 @@ class ProfileT:
         use_linear : bool (default False)
                      whether to use linear instead of profile t
         '''
+        lower, upper = self.get_prediction_intervals(alpha, ixs, use_linear)
+        ypred = self.model.trueF(self.theta)
+        print("y_true\t\ty_pred\t\tlow\t\thigh")
+        for i in ixs:
+            print(f"{self.model.y[i]:e}\t{ypred[i]:e}\t"
+                  f"{lower[i]:e}\t{upper[i]:e}")
 
-        if use_linear:
-            lower, upper = self.get_prediction_intervals(alpha)
-            ypred = self.model.trueF(self.theta)
-            print("y_true\t\ty_pred\t\tlow\t\thigh")
-            for i in ixs:
-                print(f"{self.model.y[i]:e}\t{ypred[i]:e}\t"
-                      f"{lower[i]:e}\t{upper[i]:e}")
-        else:
-            t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
-            ypred = self.model.trueF(self.theta)
-            for i in ixs:
-                taus, thetas, _ = self.calculate_points_param_pred(i).right
-                spline = CubicSpline(taus, thetas)
-                lower, upper = spline(-t_dist), spline(t_dist)
-                print(f"{self.model.y[i]:e}\t{ypred[i]:e}\t"
-                      f"{lower:e}\t{upper:e}")
-
-    def get_params_intervals(self, alpha):
+    def get_params_intervals(self, alpha, use_linear=False):
         '''
         Returns the lower and upper bounds of the
         parameters intervals with confidence alpha.
@@ -353,6 +333,8 @@ class ProfileT:
         ----------
         alpha : float
                 significance level
+        use_linear : bool
+                      whether to use linear or not (default False)
 
         Returns
         --------
@@ -362,11 +344,15 @@ class ProfileT:
                  upper bounds for each parameter
         '''
         t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
-        lower = self.theta - self.se * t_dist
-        upper = self.theta + self.se * t_dist
+        if use_linear:
+            lower = self.theta - self.se * t_dist
+            upper = self.theta + self.se * t_dist
+        else:
+            lower = np.array(list(self.spline_tau2theta[i](-t_dist) for i in range(self.model.n)))
+            upper = np.array(list(self.spline_tau2theta[i](t_dist) for i in range(self.model.n)))
         return lower, upper
 
-    def get_prediction_intervals(self, alpha):
+    def get_prediction_intervals(self, alpha, ixs, use_linear=False):
         '''
         Returns the lower and upper bounds of the
         prediction intervals with confidence alpha.
@@ -375,6 +361,10 @@ class ProfileT:
         ----------
         alpha : float
                 significance level
+        ixs : array_like
+               list of indices to report
+        use_linear : bool
+                      whether to use linear or not (default False)
 
         Returns
         --------
@@ -385,9 +375,17 @@ class ProfileT:
         '''
         y_pred = self.model.trueF(self.theta)
         f_dist = stats.t.ppf(1 - alpha/2, self.model.m - self.model.n)
+        t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
 
-        lower = y_pred - self.res_std_error * np.sqrt(f_dist * self.model.n)
-        upper = y_pred + self.res_std_error * np.sqrt(f_dist * self.model.n)
+        if use_linear:
+            lower = y_pred - self.res_std_error * np.sqrt(f_dist * self.model.n)
+            upper = y_pred + self.res_std_error * np.sqrt(f_dist * self.model.n)
+        else:
+            lower, upper = np.zeros(np.max(ixs)+1), np.zeros(np.max(ixs)+1)
+            for i in ixs:
+               taus, thetas, _ = self.calculate_points_param_pred(i).right
+               spline = CubicSpline(taus, thetas)
+               lower[i], upper[i] = spline(-t_dist), spline(t_dist)
 
         return lower, upper
 

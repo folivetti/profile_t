@@ -33,7 +33,7 @@ def plot_theta_theta(profile, i, j, alpha, ax):
     ax : matplotlib axis
           axis to insert plot
     '''
-    p, q = profile.approximateProfileContour(i, j, alpha)
+    p, q = profile.approximate_contour(i, j, alpha)
     ax.plot(p, q, label='data', color='k')
 
 
@@ -169,7 +169,7 @@ def plot_all_theta_theta(profile, model_name, alpha,
                 upper = (n_vars-1)*i + j
                 lower = (n_vars-1)*j + i + 1
                 ax = plt.subplot(n_vars-1, n_vars-1, upper)
-                profile.plot_theta_theta(i, j, alpha, ax)
+                plot_theta_theta(profile, i, j, alpha, ax)
                 ax.set_xlabel(r"$\theta_{}$".format(i))
                 ax.set_ylabel(r"$\theta_{}$".format(j))
                 if upper != lower and lower <= (n_vars-1)*(n_vars-1):
