@@ -8,7 +8,7 @@ This module allows the calculation of confidence regions of the numerical parame
 
 The tau-theta plot shows the nonlinearity of the confidence interval of each parameter:
 
-![](figs/BOD_tau_theta_0.png) {height=50%}
+![](figs/BOD_tau_theta_0.png | width=50)
 
 The theta-theta plot shows the relationship between a pair of numerical parameters:
 
