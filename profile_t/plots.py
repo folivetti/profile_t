@@ -91,7 +91,7 @@ def plot_errorbar(profile, alpha, ixs, ax1, ax2, ix=0):
          dimension to plot (default=0, only for multi-dimension)
     '''
     t_dist = stats.t.ppf(1 - alpha/2.0, profile.model.m - profile.model.n)
-    lower, upper = profile.getPredictionsIntervals(alpha)
+    lower, upper = profile.get_prediction_intervals(alpha, ixs, True)
     ypred = profile.model.trueF(profile.theta)
     if profile.model.multivar:
         x = [profile.model.x[ix][i] for i in ixs]
@@ -101,11 +101,7 @@ def plot_errorbar(profile, alpha, ixs, ax1, ax2, ix=0):
     ax1.plot(x, ypred[ixs], label="linear", color="orange", linestyle="--")
     ax1.fill_between(x, lower[ixs], upper[ixs], color="orange", alpha=0.2)
 
-    lowers, uppers = np.zeros(profile.model.m), np.zeros(profile.model.m)
-    for i in ixs:
-        profile_t = profile.calculate_points_param_pred(i).right
-        spline = CubicSpline(profile_t[0], profile_t[1][0, :])
-        lowers[i], uppers[i] = spline(-t_dist), spline(t_dist)
+    lowers, uppers = profile.get_prediction_intervals(alpha, ixs)
 
     ax2.plot(x, ypred[ixs], label="profile-t", color="blue")
     ax2.fill_between(x, lowers[ixs], uppers[ixs], color="blue", alpha=0.2)

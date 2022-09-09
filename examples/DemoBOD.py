@@ -11,6 +11,7 @@ import numpy as np
 import sympy as sym
 
 import matplotlib
+import matplotlib.pyplot as plt
 
 font = {'family' : 'normal',
         'weight' : 'bold',
@@ -18,9 +19,9 @@ font = {'family' : 'normal',
 
 matplotlib.rc('font', **font)
 
-from symbolic_expression import SymExpr
+from profile_t.symbolic_expression import SymExpr
 from profile_t import ProfileT
-from plots import plot_all_theta_theta, plot_all_tau_theta
+from profile_t.plots import plot_all_theta_theta, plot_all_tau_theta, plot_errorbar
 
 def DemoBOD():
     # data points
@@ -50,6 +51,11 @@ def DemoBOD():
     plot_all_theta_theta(profile, "BOD", 0.01, font)
     plot_all_tau_theta(profile, "BOD", font)
 
+    fig, ax = plt.subplots(2,1,figsize=(15,15), constrained_layout=True)
+    ax_linear = plt.subplot(2,1,1)
+    ax_prof = plt.subplot(2,1,2)
+    plot_errorbar(profile, 0.01, np.arange(0,6,1), ax_linear, ax_prof)
+    plt.savefig('BOD_predictions.pdf')
 
 if __name__ == '__main__':
     DemoBOD()

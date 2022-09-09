@@ -11,9 +11,9 @@ Example script that creates the model using create_symbolic without symplificati
 import numpy as np
 import sympy as sym
 
-from symbolic_expression import create_symbolic
+from profile_t.symbolic_expression import create_symbolic
 from profile_t import ProfileT
-from plots import plot_all_theta_theta, plot_all_tau_theta
+from profile_t.plots import plot_all_theta_theta, plot_all_tau_theta
 
 def DemoPuromycin():
     p = 2

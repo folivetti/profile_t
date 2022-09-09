@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 import sympy as sym
 
-from symbolic_expression import SymExpr, create_symbolic
+from profile_t.symbolic_expression import SymExpr, create_symbolic
 from profile_t import ProfileT
 
 

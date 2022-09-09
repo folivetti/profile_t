@@ -18,7 +18,7 @@ from scipy.interpolate import CubicSpline
 from scipy import stats
 import warnings
 
-from either import Either, seq_either
+from profile_t.either import Either, seq_either
 
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning) 
