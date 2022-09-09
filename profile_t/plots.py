@@ -15,6 +15,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
+__all__ = [
+    "plot_theta_theta",
+    "plot_tau_theta",
+    "plot_errorbar",
+    "plot_all_tau_theta",
+    "plot_all_theta_theta",
+]
+
+
 def plot_theta_theta(profile, i, j, alpha, ax):
     '''
     Creates the pairwise plot of two parameters using the

@@ -12,6 +12,12 @@ import sys
 import numpy as np
 import sympy as sym
 
+__all__ = [
+    "SymExpr",
+    "SymExprMultivar",
+    "create_symbolic",
+]
+
 
 class SymExpr:
     """Class with support to symbolic manipulation of a
