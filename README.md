@@ -1,4 +1,4 @@
-![](figs/logo.png)
+<img src="figs/logo.png" width="80%" height="80%">
 
 **profile_t** is a Python module for calculating confidence intervals of nonlinear regression models.
 
@@ -12,11 +12,11 @@ The tau-theta plot shows the nonlinearity of the confidence interval of each par
 
 The theta-theta plot shows the relationship between a pair of numerical parameters:
 
-![](figs/BOD_theta_theta.png)
+<img src="figs/BOD_theta_theta.png" width="50%" height="50%">
 
 The prediction interval shows the uncertainties around the predictions of the training data:
 
-![](figs/BOD_predictions.png)
+<img src="figs/BOD_predictions.png" width="50%" height="50%">
 
 More information available at the paper:
 
