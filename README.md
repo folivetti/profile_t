@@ -73,3 +73,8 @@ You can test the module with the `test_profile.py` script in the `tests` folder.
 ## Citation
 
 TODO
+
+## AUTHORS
+
+- Fabricio Olivetti de Franca <folivetti (at) ufabc.edu.br>
+- Gabriel Kronberger <Gabriel.Kronberger (at) fh-hagenberg.at>
