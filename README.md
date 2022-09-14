@@ -8,15 +8,21 @@ This module allows the calculation of confidence regions of the numerical parame
 
 The tau-theta plot shows the nonlinearity of the confidence interval of each parameter:
 
-<img src="figs/BOD_tau_theta_0.png" width="50%" height="50%" align="center">
+<p align="center">
+<img src="figs/BOD_tau_theta_0.png" width="50%" height="50%">
+</p>
 
 The theta-theta plot shows the relationship between a pair of numerical parameters:
 
-<img src="figs/BOD_theta_theta.png" width="50%" height="50%" align="center">
+<p align="center">
+<img src="figs/BOD_theta_theta.png" width="50%" height="50%">
+</p>
 
 The prediction interval shows the uncertainties around the predictions of the training data:
 
-<img src="figs/BOD_predictions.png" width="50%" height="50%" align="center">
+<p align="center">
+<img src="figs/BOD_predictions.png" width="50%" height="50%">
+</p>
 
 More information available at the paper:
 
