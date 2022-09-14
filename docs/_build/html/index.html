@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to profile_t’s documentation! &mdash; profile_t 1.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> profile_t
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to profile_t’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">profile_t</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>Welcome to profile_t’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-profile_t.__init__">
+<span id="welcome-to-profile-t-s-documentation"></span><h1>Welcome to profile_t’s documentation!<a class="headerlink" href="#module-profile_t.__init__" title="Permalink to this headline"></a></h1>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">profile_t</span></code> module implements the profile t likelihood algorithm. This
+calculates the confidence interval and prediction interval for any nonlinear
+regression models described as SymExpr or SymExprMultivar object.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">profile_t.__init__.</span></span><span class="sig-name descname"><span class="pre">ProfileT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT" title="Permalink to this definition"></a></dt>
+<dd><p>Class for profile t calculation</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.approximate_contour">
+<span class="sig-name descname"><span class="pre">approximate_contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ix1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ix2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.approximate_contour" title="Permalink to this definition"></a></dt>
+<dd><p>Approximates de profile countour plot
+for parameters ix1 and ix2 with confidence alpha.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ix1</strong> (<em>array_like</em>) – index of the first parameter</p></li>
+<li><p><strong>ix2</strong> (<em>array_like</em>) – index of the second parameter</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>p</strong> (<em>array_like</em>) – points for the first parameter</p></li>
+<li><p><strong>q</strong> (<em>array_like</em>) – points for the second parameter</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.calculate_data_points">
+<span class="sig-name descname"><span class="pre">calculate_data_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.calculate_data_points" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the data points to generate the cubic
+splines for profile t function.
+Repeat that for each numeric parameter and returns
+None on the right field in case it finds a better optima.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.calculate_data_points_prediction">
+<span class="sig-name descname"><span class="pre">calculate_data_points_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.calculate_data_points_prediction" title="Permalink to this definition"></a></dt>
+<dd><p>Same as calculate_data_points but for prediction interval.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.calculate_points_param">
+<span class="sig-name descname"><span class="pre">calculate_points_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.calculate_points_param" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the data points for numeric parameter idx.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.calculate_points_param_pred">
+<span class="sig-name descname"><span class="pre">calculate_points_param_pred</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.calculate_points_param_pred" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the data points for the prediction y_idx.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.calculate_statistics">
+<span class="sig-name descname"><span class="pre">calculate_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.calculate_statistics" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the following statistics about the model:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>se : standard error</p></li>
+<li><p>res_std_error : residual standard error</p></li>
+<li><p>ssr : sum of squares residuals</p></li>
+<li><p>s : residual standard error</p></li>
+<li><p>corr : correlation between coefficients</p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.create_splines">
+<span class="sig-name descname"><span class="pre">create_splines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.create_splines" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the profile t cubic splines
+interpolating the calculated data points
+tau and theta.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.get_params_intervals">
+<span class="sig-name descname"><span class="pre">get_params_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_linear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.get_params_intervals" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the lower and upper bounds of the
+parameters intervals with confidence alpha.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>use_linear</strong> (<em>bool</em>) – whether to use linear or not (default False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lower</strong> (<em>array_like</em>) – lower bounds for each parameter</p></li>
+<li><p><strong>upper</strong> (<em>array_like</em>) – upper bounds for each parameter</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.get_prediction_intervals">
+<span class="sig-name descname"><span class="pre">get_prediction_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ixs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_linear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.get_prediction_intervals" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the lower and upper bounds of the
+prediction intervals with confidence alpha.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>ixs</strong> (<em>array_like</em>) – list of indices to report</p></li>
+<li><p><strong>use_linear</strong> (<em>bool</em>) – whether to use linear or not (default False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lower</strong> (<em>array_like</em>) – lower bounds for each data point</p></li>
+<li><p><strong>upper</strong> (<em>array_like</em>) – upper bounds for each data point</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.points_from_delta">
+<span class="sig-name descname"><span class="pre">points_from_delta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_jac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.points_from_delta" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the data points for an initial delta.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.points_from_delta_pred">
+<span class="sig-name descname"><span class="pre">points_from_delta_pred</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_jac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.points_from_delta_pred" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the data points for an initial delta.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.report_parameters_ci">
+<span class="sig-name descname"><span class="pre">report_parameters_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_linear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.report_parameters_ci" title="Permalink to this definition"></a></dt>
+<dd><p>Prints out the model ssr and s^2 and the confidence interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>use_linear</strong> (<em>bool</em><em> (</em><em>default False</em><em>)</em>) – whether to use linear instead of profile t</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.report_prediction_interval">
+<span class="sig-name descname"><span class="pre">report_prediction_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ixs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_linear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.report_prediction_interval" title="Permalink to this definition"></a></dt>
+<dd><p>Prints out the prediction intervals for the data points
+ixs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ixs</strong> (<em>array_like</em>) – list of indices to report</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>use_linear</strong> (<em>bool</em><em> (</em><em>default False</em><em>)</em>) – whether to use linear instead of profile t</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.__init__.ProfileT.splines_sketches">
+<span class="sig-name descname"><span class="pre">splines_sketches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.__init__.ProfileT.splines_sketches" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the pairwise splines
+used to calculate the pairwise plot points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>spline_g</strong> – matrix of spline functions for
+every pair of parameters.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-profile_t.symbolic_expression"></span><p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">symbolic_expression</span></code> module implements the support
+to handle nonlinear regression models described as strings.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExpr">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">profile_t.symbolic_expression.</span></span><span class="sig-name descname"><span class="pre">SymExpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_symbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_symbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExpr" title="Permalink to this definition"></a></dt>
+<dd><p>Class with support to symbolic manipulation of a
+regression model model described as a string</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExpr.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExpr.func" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the residuals of the regression
+model given an array of parameters values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array_like</em>) – parameters values</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>residuals of the regression model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExpr.funcr">
+<span class="sig-name descname"><span class="pre">funcr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExpr.funcr" title="Permalink to this definition"></a></dt>
+<dd><p>Residual calculation for the
+rewritten expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExpr.jacr">
+<span class="sig-name descname"><span class="pre">jacr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExpr.jacr" title="Permalink to this definition"></a></dt>
+<dd><p>Jacobian matrix for the
+rewritten expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExpr.rewrite">
+<span class="sig-name descname"><span class="pre">rewrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExpr.rewrite" title="Permalink to this definition"></a></dt>
+<dd><p>Rewrites the expression replacing the first
+parameter with the evaluation at data point i.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rewritten expression</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExprMultivar">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">profile_t.symbolic_expression.</span></span><span class="sig-name descname"><span class="pre">SymExprMultivar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_symbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_symbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExprMultivar" title="Permalink to this definition"></a></dt>
+<dd><p>Class with support to symbolic manipulation of a
+regression model model described as a string</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExprMultivar.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExprMultivar.func" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the residuals of the regression
+model given an array of parameters values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>theta</strong> (<em>array_like</em>) – parameters values</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>residuals of the regression model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExprMultivar.funcr">
+<span class="sig-name descname"><span class="pre">funcr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExprMultivar.funcr" title="Permalink to this definition"></a></dt>
+<dd><p>Residual calculation for the
+rewritten expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExprMultivar.jacr">
+<span class="sig-name descname"><span class="pre">jacr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExprMultivar.jacr" title="Permalink to this definition"></a></dt>
+<dd><p>Jacobian matrix for the
+rewritten expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array of residuals</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.SymExprMultivar.rewrite">
+<span class="sig-name descname"><span class="pre">rewrite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.SymExprMultivar.rewrite" title="Permalink to this definition"></a></dt>
+<dd><p>Rewrites the expression replacing the first
+parameter with the evaluation at data point i.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – index of data point of reference.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rewritten expression</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.symbolic_expression.create_symbolic">
+<span class="sig-prename descclassname"><span class="pre">profile_t.symbolic_expression.</span></span><span class="sig-name descname"><span class="pre">create_symbolic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_simpl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.symbolic_expression.create_symbolic" title="Permalink to this definition"></a></dt>
+<dd><p>Gets an string representing the model and
+the data points and returns either SymExpr or
+SymExprMultivar, returning an object compatible
+with ProfileT class.</p>
+<p>The input variables in the expression should
+follow the format xN with N representing the
+index of the variable in the data set (0-indexed).
+E.g., ‘x0 + x1’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – string of the model</p></li>
+<li><p><strong>x</strong> (<em>array_like</em>) – input variables</p></li>
+<li><p><strong>y</strong> (<em>array_like</em>) – target values</p></li>
+<li><p><strong>apply_simpl</strong> (<em>bool</em>) – whether to apply simplifications or not (default True)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>SymExpr or SymExprMultivar object to be used</em></p></li>
+<li><p><em>with ProfileT</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-profile_t.plots"></span><p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">plots</span></code> implements auxiliary functions to plot the
+confidence intervals.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.plots.plot_all_tau_theta">
+<span class="sig-prename descclassname"><span class="pre">profile_t.plots.</span></span><span class="sig-name descname"><span class="pre">plot_all_tau_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.plots.plot_all_tau_theta" title="Permalink to this definition"></a></dt>
+<dd><p>Creates all the tau x theta plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<em>ProfileT object</em>) – the profile t with the pre-calculated splines</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – name of the model, this will be prepended
+into the figure filename.</p></li>
+<li><p><strong>font</strong> (<em>dict</em>) – matplotlib font information (optional)</p></li>
+<li><p><strong>hide_ticks</strong> (<em>bool</em>) – whether to hide the ticks (optional)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.plots.plot_all_theta_theta">
+<span class="sig-prename descclassname"><span class="pre">profile_t.plots.</span></span><span class="sig-name descname"><span class="pre">plot_all_theta_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">font</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.plots.plot_all_theta_theta" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the pairwise plots of each pair of parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<em>ProfileT object</em>) – the profile t with the pre-calculated splines</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – name of the model, this will be prepended
+into the figure filename.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>font</strong> (<em>dict</em>) – matplotlib font information (optional)</p></li>
+<li><p><strong>hide_ticks</strong> (<em>bool</em>) – whether to hide the ticks (optional)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.plots.plot_errorbar">
+<span class="sig-prename descclassname"><span class="pre">profile_t.plots.</span></span><span class="sig-name descname"><span class="pre">plot_errorbar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ixs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.plots.plot_errorbar" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the linear and profile plot for prediction
+intervals of data points with indices ixs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<em>ProfileT object</em>) – the profile t with the pre-calculated splines</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>ixs</strong> (<em>array_like</em>) – indeces of the data points</p></li>
+<li><p><strong>ax1</strong> (<em>matplotlib axis</em>) – axis to insert linear plot</p></li>
+<li><p><strong>ax2</strong> (<em>matplotlib axis</em>) – axis to insert profile plot</p></li>
+<li><p><strong>ix</strong> (<em>int</em>) – dimension to plot (default=0, only for multi-dimension)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.plots.plot_tau_theta">
+<span class="sig-prename descclassname"><span class="pre">profile_t.plots.</span></span><span class="sig-name descname"><span class="pre">plot_tau_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.plots.plot_tau_theta" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the linear and profile plot for the i-th parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<em>ProfileT object</em>) – the profile t with the pre-calculated splines</p></li>
+<li><p><strong>i</strong> (<em>int</em>) – index of the parameter</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em>) – axis to insert plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="profile_t.plots.plot_theta_theta">
+<span class="sig-prename descclassname"><span class="pre">profile_t.plots.</span></span><span class="sig-name descname"><span class="pre">plot_theta_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#profile_t.plots.plot_theta_theta" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the pairwise plot of two parameters using the
+confidence alpha.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile</strong> (<em>ProfileT object</em>) – the profile t with the pre-calculated splines</p></li>
+<li><p><strong>i</strong> (<em>int</em>) – index of first parameter</p></li>
+<li><p><strong>j</strong> (<em>int</em>) – index of second parameter</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – significance level</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em>) – axis to insert plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Índice</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Fabricio Olivetti de Franca and Gabriel Kronberger.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
