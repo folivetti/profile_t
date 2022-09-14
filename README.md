@@ -90,6 +90,6 @@ A joint work of:
 <table border="0">
  <tr>
     <td><a href="https://pesquisa.ufabc.edu.br/hal/index.html" target="_blank"><img src="figs/hal.svg" height="90" align="left"></a> Heuristics, Analysis and Learning Laboratory (HAL)</td>
-    <td><a href="https://heal.heuristiclab.com/" target="_blank"><img src="figs/HEAL.png" height="90" align="left"></a> Heuristics and Evolutionary Algorithms Laboratory (HEAL)</td>
+    <td><a href="https://heal.heuristiclab.com/" target="_blank"><img src="figs/HEAL.png" height="80" align="left"></a> Heuristics and Evolutionary Algorithms Laboratory (HEAL)</td>
  </tr>
 </table>
