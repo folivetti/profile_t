@@ -84,3 +84,8 @@ TODO
 
 - Fabricio Olivetti de Franca <folivetti (at) ufabc.edu.br>
 - Gabriel Kronberger <Gabriel.Kronberger (at) fh-hagenberg.at>
+
+
+<img src="figs/hal.svg" height="100" align="left"> Heuristics, Analysis and Learning Laboratory (HAL)
+
+<img src="figs/HEAL.png" height="100" align="left">
