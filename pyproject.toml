@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "profile_t"
+version = "1.0.2"
+authors = [
+  { name="Fabricio Olivetti de Franca", email="folivetti@ufabc.edu.br" },
+  { name="Gabriel Kronberger", email="Gabriel.Kronberger@fh-hagenberg.at" },
+]
+description = "Profile t calculation and plots for regression model"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["numpy>=1.9.0", "scipy>=1.9.0", "sympy>=1.7.0", "matplotlib>=2.0.0"]
+[project.urls]
+"Homepage" = "https://github.com/folivetti/profile_t"
+"Bug Tracker" = "https://github.com/folivetti/profile_t/issues"
