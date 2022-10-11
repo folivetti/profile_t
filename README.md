@@ -1,3 +1,4 @@
+
 <img src="figs/logo.svg" width="100" height="100" align="left">
 
 **profile_t** is a Python module for calculating confidence intervals of nonlinear regression models.
