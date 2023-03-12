@@ -30,7 +30,7 @@ __all__ = [
 class ProfileT:
     """Class for profile t calculation"""
 
-    def __init__(self, model, start_theta):
+    def __init__(self, model, start_theta, prediction = False, correction = 0):
         '''
         Compute the profile t function from the symbolic nonlinear
         regression model.
@@ -41,6 +41,7 @@ class ProfileT:
                 representing the nonlinear regression model.
         start_theta : array_like
                       initial values of numerical parameters.
+        prediction : whether it is being used for prediction intervals.
 
         Examples
         --------
@@ -48,6 +49,8 @@ class ProfileT:
         OUTPUT TODO
         '''
         self.model = model
+        self.prediction = prediction
+        self.correction = correction
 
         # apply least squares to the current model and numeric parameters to
         # ensure the current theta represents the local optima.
@@ -60,6 +63,7 @@ class ProfileT:
                                            self.model.n,
                                            self.model.m - self.model.n)
                                )
+        #self.tau_max = stats.t.ppf(1 - 0.01/2, self.model.m - self.model.n)
 
         # the either object will contain None in left field
         # only when the process returned without error.
@@ -75,22 +79,16 @@ class ProfileT:
         self.proft = either_tp.right
         self.create_splines()
 
-    def calculate_data_points(self, kmax=30, step=8):
+    def calculate_data_points(self, kmax=300, step=8):
         '''
         Calculates the data points to generate the cubic
         splines for profile t function.
         Repeat that for each numeric parameter and returns
         None on the right field in case it finds a better optima.
         '''
+        rng = [0] if self.prediction else range(self.model.n)
         return seq_either([self.calculate_points_param(idx, kmax, step)
-                           for idx in range(self.model.n)])
-
-    def calculate_data_points_prediction(self, kmax=30, step=8):
-        '''
-        Same as calculate_data_points but for prediction interval.
-        '''
-        return seq_either([self.calculate_points_param_pred(idx, kmax, step)
-                           for idx in range(self.model.m)])
+                           for idx in rng])
 
     def calculate_points_param(self, idx, kmax, step):
         '''
@@ -145,7 +143,7 @@ class ProfileT:
             t += inv_slope
             theta_cond[idx] = self.theta[idx] + delta*t
             opt = least_squares(self.model.func, theta_cond, fixed_jac,
-                                method='lm')
+                                method='lm', x_scale=self.se)
             residue = self.model.y - self.model.trueF(opt.x)
             ssr_cond = np.square(residue).sum()
 
@@ -153,7 +151,8 @@ class ProfileT:
                 print("Found a better local model, restarting...")
                 return Either(left=opt.x)
 
-            tau_i = np.sign(delta) * np.sqrt(ssr_cond - self.ssr) / self.s
+            s = self.s if self.correction == 0.0 else self.s * np.sqrt(self.model.m - self.model.n + 1) 
+            tau_i = np.sign(delta) * np.sqrt(ssr_cond - self.ssr) / s
 
             inv_slope = tau_i * self.s * self.s
             inv_slope = inv_slope/(self.se[idx] *
@@ -164,88 +163,7 @@ class ProfileT:
             thetas.append(opt.x.copy())
             deltas.append((self.theta[idx] - opt.x[idx])/self.se[idx])
 
-            if np.abs(tau_i) > self.tau_max:
-                break
-
-        return Either(right=(taus, thetas, deltas))
-
-    def calculate_points_param_pred(self, idx, kmax=30, step=8):
-        '''
-        Calculates the data points for the prediction y_idx.
-        '''
-
-        def fixed_jac(theta):
-            J = self.model.jacr(idx)(theta)
-            J[:, 0] = 0.0
-            return J
-
-        delta = -self.res_std_error[idx]/step
-        theta_cond = self.theta.copy()
-        theta_cond[0] = self.model.trueF(self.theta)[idx]
-
-        # First we generate the data points starting from -delta,
-        # after that we generate the points starting from delta.
-        # Finally, we concatenate the data points together
-        # with the trivial point where tau = 0.
-
-        res = self.points_from_delta_pred(delta, idx, fixed_jac, kmax)
-        if res.left is None:
-            tau_1, m_1, deltas_1 = res.right
-            res = self.points_from_delta_pred(-delta, idx, fixed_jac, kmax)
-            if res.left is None:
-                tau_2, m_2, deltas_2 = res.right
-            else:
-                return res
-        else:
-            return res
-
-        tau = np.array(tau_1 + [0] + tau_2)
-        ix_tau = tau.argsort()
-
-        return Either(right=(tau[ix_tau],
-                             np.array(m_1 + [theta_cond[0]] + m_2)[ix_tau],
-                             np.array(deltas_1 + [0] + deltas_2)[ix_tau]))
-
-    def points_from_delta_pred(self, delta, idx, fixed_jac, kmax):
-        '''
-        Calculates the data points for an initial delta.
-        '''
-        taus, thetas, deltas = [], [], []
-        inv_slope = 1.0
-        t = 0.0
-        y_i = self.model.trueF(self.theta)[idx]
-        theta_cond = self.theta.copy()
-        theta_cond[0] = y_i
-
-        # we disturb the idx-th value of theta by delta*t
-        # and re-optimize the other parameters.
-        # This will create a series of (tau, theta) values
-        # used to calculate the CI.
-        for _ in range(kmax):
-            t += inv_slope
-            theta_cond[0] = y_i + delta*t
-            opt = least_squares(self.model.funcr(idx), theta_cond, fixed_jac,
-                                method='lm')
-            residue = self.model.funcr(idx)(opt.x)
-            ssr_cond = np.square(residue).sum()
-
-            if (ssr_cond-self.ssr) < 0:
-                print("Found a better local model, restarting...")
-                return Either(left=opt.x)
-
-            tau_i = np.sign(delta) * np.sqrt(ssr_cond - self.ssr) / self.s
-
-            inv_slope = tau_i * self.s * self.s
-            inv_slope = inv_slope/(self.res_std_error[idx] *
-                                   (-residue.dot(
-                                       self.model.jacr(idx)(opt.x)[:, 0])))
-            inv_slope = min(4.0, max(np.abs(inv_slope), 1.0/16))
-
-            taus.append(tau_i)
-            thetas.append(opt.x[0])
-            deltas.append((self.theta[0] - opt.x[0])/self.res_std_error[idx])
-
-            if np.abs(tau_i) > self.tau_max:
+            if np.abs(tau_i) > self.tau_max: # + self.correction:
                 break
 
         return Either(right=(taus, thetas, deltas))
@@ -270,16 +188,35 @@ class ProfileT:
 
         # we must use economic mode so R will be a square matrix
         _, R = la.qr(J, mode='economic')
-        R = la.inv(R)
+        self.R = la.inv(R)
 
         self.s = np.sqrt(self.ssr/(m-n))
-        self.se = np.sqrt(np.square(np.triu(R)).sum(axis=1))
-        L = (np.triu(R).T/self.se).T
+        self.se = np.sqrt(np.square(np.triu(self.R)).sum(axis=1))
+        L = (np.triu(self.R).T/self.se).T
         self.se = self.s*self.se
 
         self.corr = L@L.T
         j_r = J@R
         self.res_std_error = self.s * np.sqrt(np.square(j_r).sum(axis=1))
+
+    def calculate_statistics_newpoints(self, x):
+        """
+        Calculates the following statistics about the model:
+
+            * res_std_error : residual standard error
+        """
+        n = len(x)
+        m = self.model.m
+        x = [x[:, i] for i in range(x.shape[1])] if self.model.multivar else x
+
+        J = self.model.jac_new((x, self.theta))
+
+        # we must use economic mode so R will be a square matrix
+        #_, R = la.qr(J, mode='economic')
+        #R = la.inv(R)
+
+        j_r = J @ self.R
+        return self.s * np.sqrt(np.square(j_r).sum(axis=1))
 
     def report_parameters_ci(self, alpha, use_linear=False):
         '''
@@ -303,7 +240,7 @@ class ProfileT:
             print(f"{i}\t{self.theta[i]:e}\t{self.se[i]:e}\t"
                   f"{lower[i]:e}\t{upper[i]:e}\t{np.round(self.corr[i,:],2)}")
 
-    def report_prediction_interval(self, ixs, alpha, use_linear=False):
+    def report_prediction_interval(self, xs, alpha, use_linear=False, newpoint=False):
         '''
         Prints out the prediction intervals for the data points
         ixs.
@@ -317,11 +254,11 @@ class ProfileT:
         use_linear : bool (default False)
                      whether to use linear instead of profile t
         '''
-        lower, upper = self.get_prediction_intervals(alpha, ixs, use_linear)
-        ypred = self.model.trueF(self.theta)
-        print("y_true\t\ty_pred\t\tlow\t\thigh")
-        for i in ixs:
-            print(f"{self.model.y[i]:e}\t{ypred[i]:e}\t"
+        lower, upper = self.get_prediction_intervals(alpha, xs, use_linear, newpoint)
+        ypred = np.array([self.model.trueF_new((x, self.theta)) for x in xs])
+        print("y_pred\t\tlow\t\thigh")
+        for i, x in enumerate(xs):
+            print(f"{ypred[i]:e}\t"
                   f"{lower[i]:e}\t{upper[i]:e}")
 
     def get_params_intervals(self, alpha, use_linear=False):
@@ -343,16 +280,17 @@ class ProfileT:
         upper : array_like
                  upper bounds for each parameter
         '''
+        f_dist = np.sqrt(stats.f.ppf(1 - alpha, self.model.n, self.model.m - self.model.n))
         t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
         if use_linear:
             lower = self.theta - self.se * t_dist
             upper = self.theta + self.se * t_dist
         else:
-            lower = np.array(list(self.spline_tau2theta[i](-t_dist) for i in range(self.model.n)))
-            upper = np.array(list(self.spline_tau2theta[i](t_dist) for i in range(self.model.n)))
+            lower = np.array(list(self.spline_tau2theta[i](-f_dist) for i in range(self.model.n)))
+            upper = np.array(list(self.spline_tau2theta[i](f_dist) for i in range(self.model.n)))
         return lower, upper
 
-    def get_prediction_intervals(self, alpha, ixs, use_linear=False):
+    def get_prediction_intervals(self, alpha, xs, use_linear=False, newpoint=False):
         '''
         Returns the lower and upper bounds of the
         prediction intervals with confidence alpha.
@@ -373,20 +311,23 @@ class ProfileT:
         upper : array_like
                  upper bounds for each data point
         '''
-        y_pred = self.model.trueF(self.theta)
-        f_dist = stats.t.ppf(1 - alpha/2, self.model.m - self.model.n)
+        y_pred = np.array([self.model.trueF_new((x, self.theta)) for x in xs])
+        f_dist = np.sqrt(stats.f.ppf(1 - alpha, self.model.n, self.model.m - self.model.n))
         t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
+        correction = self.s if newpoint else 0
 
+        # if it is a new data point it must be (self.res_std_error + self.s)
         if use_linear:
-            lower = y_pred - self.res_std_error * np.sqrt(f_dist * self.model.n)
-            upper = y_pred + self.res_std_error * np.sqrt(f_dist * self.model.n)
+            res_std_error = self.calculate_statistics_newpoints(xs)
+            lower = y_pred - (res_std_error + correction) * t_dist #np.sqrt(f_dist * self.model.n)
+            upper = y_pred + (res_std_error + correction) * t_dist #np.sqrt(f_dist * self.model.n)
         else:
-            lower, upper = np.zeros(np.max(ixs)+1), np.zeros(np.max(ixs)+1)
-            for i in ixs:
-               taus, thetas, _ = self.calculate_points_param_pred(i).right
-               spline = CubicSpline(taus, thetas)
-               lower[i], upper[i] = spline(-t_dist), spline(t_dist)
-
+            lower, upper = np.zeros(np.max(len(xs))+1), np.zeros(np.max(len(xs))+1)
+            for i,x in enumerate(xs):
+               theta = self.theta.copy()
+               theta[0] = y_pred[i]
+               profile_pred = ProfileT(self.model.rewrite(x), theta, True, correction)
+               lower[i], upper[i] = profile_pred.spline_tau2theta[0](-f_dist), profile_pred.spline_tau2theta[0](f_dist)
         return lower, upper
 
     def create_splines(self):
@@ -397,7 +338,7 @@ class ProfileT:
         '''
         self.spline_tau2theta = []
         self.spline_theta2tau = []
-        n = self.model.n
+        n = 1 if self.prediction else self.model.n
         for idx in range(n):
             tau = self.proft[idx][0]
             theta = self.proft[idx][1][idx, :]
@@ -426,7 +367,7 @@ class ProfileT:
                     matrix of spline functions for
                     every pair of parameters.
         '''
-        n = self.model.n
+        n = 1 if self.prediction else self.model.n
         spline_g = [[lambda x: x for _ in range(n)] for _ in range(n)]
         for p_idx in range(n):
             for q_idx in range(n):

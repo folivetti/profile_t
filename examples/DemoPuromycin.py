@@ -28,10 +28,13 @@ def DemoPuromycin():
     profile.report_parameters_ci(0.01, True)
     profile.report_parameters_ci(0.01)
     print("\nPrediction intervals (linear):")
-    profile.report_prediction_interval(np.arange(0,12,1), 0.01, True)
+    #profile.report_prediction_interval(x, 0.01, True)
     print("\nPrediction intervals (profile):")
-    profile.report_prediction_interval(np.arange(0,12,1), 0.01)
-
+    #profile.report_prediction_interval(x, 0.01)
+    print("\nPrediction intervals of new points (linear):")
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.01, True, True)
+    print("\nPrediction intervals of new points (profile):")
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.01, False, True)
     # create the plots
     plot_all_theta_theta(profile, "Puromycin", 0.01)
     plot_all_tau_theta(profile, "Puromycin")

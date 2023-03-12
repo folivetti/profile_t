@@ -55,11 +55,14 @@ class SymExpr:
         self.expr = expr
         self.f = sym.lambdify((self.z, *self.t), self.expr, 'numpy')
         self.trueF = lambda p: self.f(self.x, *p)
+        self.trueF_new = lambda xp: self.f(xp[0], *xp[1])
         self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.t))
         self.jac = lambda p: fix_matrix(sym.lambdify((self.z, *self.t),
                                                      self.J,
                                                      'numpy')(self.x, *p)[0]).T
-
+        self.jac_new = lambda xp: fix_matrix(sym.lambdify((self.z, *self.t),
+                                                     self.J,
+                                                     'numpy')(xp[0], *xp[1])[0]).T
         w = sym.symbols("y")
         self.t0 = (sym.solve(sym.Eq(self.expr, w), self.t[0])[0]
                    .subs({w: self.t[0]}))
@@ -80,7 +83,7 @@ class SymExpr:
         '''
         return self.trueF(theta) - self.y
 
-    def rewrite(self, i):
+    def rewrite(self, x):
         '''
         Rewrites the expression replacing the first
         parameter with the evaluation at data point i.
@@ -94,49 +97,8 @@ class SymExpr:
         -------
         rewritten expression
         '''
-        t0 = self.t0.subs({self.z: self.x[i]})
-        return self.expr.subs({self.t[0]: t0})
-
-    def funcr(self, i):
-        '''
-        Residual calculation for the
-        rewritten expression.
-
-        Parameters
-        ----------
-        i : int
-             index of data point of reference.
-
-        Returns
-        -------
-        array of residuals
-        '''
-        expr = self.rewrite(i)
-        g = sym.lambdify((self.z, *self.t), expr, 'numpy')
-        return lambda p: g(self.x, *p) - self.y
-
-    def jacr(self, i):
-        '''
-        Jacobian matrix for the
-        rewritten expression.
-
-        Parameters
-        ----------
-        i : int
-             index of data point of reference.
-
-        Returns
-        -------
-        array of residuals
-        '''
-        expr = self.rewrite(i)
-        J = sym.Matrix([expr]).jacobian(sym.Matrix(self.t))
-        jac_sym = sym.lambdify((self.z, *self.t), J, 'numpy')
-
-        def jac(p):
-            return fix_matrix(jac_sym(self.x, *p)[0]).T
-
-        return jac
+        t0 = self.t0.subs({self.z: x})
+        return SymExpr(self.expr.subs({self.t[0]: t0}), self.t, self.z, self.x, self.y)
 
 class SymExprMultivar:
     """Class with support to symbolic manipulation of a
@@ -162,6 +124,7 @@ class SymExprMultivar:
         y : array_like
              target points of the training set
         '''
+        self.npx = x
         self.x = [x[:, i] for i in range(x.shape[1])]
         self.y = y
         self.m = x.shape[0]
@@ -173,12 +136,15 @@ class SymExprMultivar:
         self.expr = expr
         self.f = sym.lambdify((*self.z, *self.t), self.expr, 'numpy')
         self.trueF = lambda p: self.f(*self.x, *p)
+        self.trueF_new = lambda xp: self.f(*xp[0], *xp[1])
         self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.t))
         self.jac = lambda p: fix_matrix(
             sym.lambdify((*self.z, *self.t),
                          self.J,
                          'numpy')(*self.x, *p)[0]).T
-
+        self.jac_new = lambda xp: fix_matrix(sym.lambdify((*self.z, *self.t),
+                                                     self.J,
+                                                     'numpy')(*xp[0], *xp[1])[0]).T
         w = sym.symbols("y")
         self.t0 = (sym.solve(sym.Eq(self.expr, w), self.t[0])[0]
                    .subs({w: self.t[0]}))
@@ -199,7 +165,7 @@ class SymExprMultivar:
         '''
         return self.trueF(theta) - self.y
 
-    def rewrite(self, i):
+    def rewrite(self, x):
         '''
         Rewrites the expression replacing the first
         parameter with the evaluation at data point i.
@@ -213,51 +179,9 @@ class SymExprMultivar:
         -------
         rewritten expression
         '''
-        t0 = self.t0.subs({self.z[j]: self.x[j][i]
+        t0 = self.t0.subs({self.z[j]: x[j]
                            for j in range(len(self.z))})
-        return self.expr.subs({self.t[0]: t0})
-
-    def funcr(self, i):
-        '''
-        Residual calculation for the
-        rewritten expression.
-
-        Parameters
-        ----------
-        i : int
-             index of data point of reference.
-
-        Returns
-        -------
-        array of residuals
-        '''
-        expr = self.rewrite(i)
-        g = sym.lambdify((*self.z, *self.t), expr, 'numpy')
-        return lambda p: g(*self.x, *p) - self.y
-
-    def jacr(self, i):
-        '''
-        Jacobian matrix for the
-        rewritten expression.
-
-        Parameters
-        ----------
-        i : int
-             index of data point of reference.
-
-        Returns
-        -------
-        array of residuals
-        '''
-        expr = self.rewrite(i)
-        J = sym.Matrix([expr]).jacobian(sym.Matrix(self.t))
-        jac_sym = sym.lambdify((*self.z, *self.t), J, 'numpy')
-
-        def jac(p):
-            return fix_matrix(jac_sym(*self.x, *p)[0]).T
-
-        return jac
-
+        return SymExprMultivar(self.expr.subs({self.t[0]: t0}), self.t, self.z, self.npx, self.y)
 
 def is_div_with_add(expr):
     '''

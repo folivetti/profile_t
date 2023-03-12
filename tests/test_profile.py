@@ -70,23 +70,24 @@ class TestPredictionLinearMethods(unittest.TestCase):
 
 
     def test_BOD(self):
-        lower, upper = profile_BOD.get_prediction_intervals(0.01, np.arange(0,3,1), True)
-        np.testing.assert_almost_equal(lower[:3], [3.312658549805434838e+00,7.819312071902687400e+00,1.149372954040558703e+01])
-        np.testing.assert_almost_equal(upper[:3], [1.246224291221497893e+01,1.723064654062804379e+01,1.900961877172801451e+01])
+        lower, upper = profile_BOD.get_prediction_intervals(0.01, np.array([1,2,3,4,5,7]), True)
+        np.testing.assert_almost_equal(lower[:3], [0.94634749,  5.38530589, 9.54993284])
+        np.testing.assert_almost_equal(upper[:3], [14.82855398, 19.66465272, 20.95341547])
 
 
     def test_Puromycin(self):
-        lower, upper = profile_Puromycin.get_prediction_intervals(0.01, np.arange(0,3,1), True)
-        np.testing.assert_almost_equal(lower[:3], [4.083948796953198013e+01,4.083948796953198013e+01,9.071601406303562953e+01])
-        np.testing.assert_almost_equal(upper[:3], [6.029257499664119990e+01,6.029257499664119990e+01,1.149059729245400092e+02])
+        lower, upper = profile_Puromycin.get_prediction_intervals(0.01, np.array([0.02, 0.02, 0.06, 0.06, 0.11, 0.11, 0.22, 0.22, 0.56, 0.56, 1.10, 1.10]), True)
+        print(lower, upper)
+        np.testing.assert_almost_equal(lower[:3], [38.32203098,  38.32203098,  87.58555045])
+        np.testing.assert_almost_equal(upper[:3], [62.81003199,  62.81003199, 118.03643653])
 
 class TestPredictionProfileMethods(unittest.TestCase):
     def test_BOD(self):
-        lower, upper = profile_BOD.get_prediction_intervals(0.01, np.arange(0,3,1))
+        lower, upper = profile_BOD.get_prediction_intervals(0.01, np.array([1,2,3,4,5,7]))
         np.testing.assert_almost_equal(lower[:3], [2.977829942580835443e+00,6.006339705743294566e+00,8.990493653182912936e+00])
         np.testing.assert_almost_equal(upper[:3], [1.903741342855682817e+01,1.900853336407513794e+01,2.057778883485272559e+01])
     def test_Puromycin(self):
-        lower, upper = profile_Puromycin.get_prediction_intervals(0.01, np.arange(0,3,1))
+        lower, upper = profile_Puromycin.get_prediction_intervals(0.01, np.array([0.02, 0.02, 0.06, 0.06, 0.11, 0.11, 0.22, 0.22, 0.56, 0.56, 1.10, 1.10]))
         np.testing.assert_almost_equal(lower[:3], [3.915104579443168120e+01,3.915104579443168120e+01,8.717961527350821882e+01])
         np.testing.assert_almost_equal(upper[:3], [6.499523935813050457e+01,6.499523935813050457e+01,1.186567869865193927e+02])
 
