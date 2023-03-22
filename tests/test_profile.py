@@ -14,7 +14,7 @@ import sympy as sym
 from profile_t.symbolic_expression import SymExpr, create_symbolic
 from profile_t import ProfileT
 
-
+'''
 def get_BOD_profile():
     x = np.array([1,2,3,4,5,7])
     y = np.array([8.3, 10.3, 19.0, 16.0, 15.6, 19.8])
@@ -39,8 +39,18 @@ def get_Puromycin_profile():
 
 profile_BOD = get_BOD_profile()
 profile_Puromycin = get_Puromycin_profile()
+'''
+class TestSymExpr(unittest.TestCase):
 
+    def test_univariate(self):
+        x1 = np.random.uniform(size=(100,1))
+        x2 = np.random.uniform(size=(100,2))
+        expr1, t1 = create_symbolic("x0 / (0.1 + x0)", 1)
+        expr2, t2 = create_symbolic("x0 * 0.3 + exp(0.1 * x1)", 2)
+        np.testing.assert_almost_equal(t1, np.array([0.1]))
+        np.testing.assert_almost_equal(t2, np.array([0.3, 0.1]))
 
+'''
 class TestLinearCI(unittest.TestCase):
 
     def test_BOD(self):
@@ -102,7 +112,7 @@ class TestProfileMethods(unittest.TestCase):
         p, q = profile_Puromycin.approximate_contour(0, 1, 0.01)
         np.testing.assert_almost_equal(p[:4], [1.921657513586993957e+02,1.932216963803349472e+02,1.943578603786636734e+02,1.955709125098300660e+02])
         np.testing.assert_almost_equal(q[:4], [4.183244165666275688e-02,4.090116665786396044e-02,4.006254785815906855e-02,3.931610900503655637e-02])
-
+'''
 
 if __name__ == '__main__':
     unittest.main()

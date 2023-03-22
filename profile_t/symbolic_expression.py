@@ -23,7 +23,7 @@ class SymExpr:
     """Class with support to symbolic manipulation of a
     regression model model described as a string"""
 
-    def __init__(self, expr, theta_symbs, x_symbs, x, y):
+    def __init__(self, expr, theta_symbs, x_symbs):
         '''
         Creates an object containing support methods to
         evaluate and handle symbolic regression models.
@@ -44,44 +44,23 @@ class SymExpr:
              target points of the training set
         '''
 
-        self.x = x
-        self.y = y
-        self.m = x.shape[0]
-        self.n = len(theta_symbs)
         self.multivar = False
 
-        self.t = theta_symbs
-        self.z = x_symbs
+        self.theta_symbs = theta_symbs
+        self.x_symbs = x_symbs
         self.expr = expr
-        self.f = sym.lambdify((self.z, *self.t), self.expr, 'numpy')
-        self.trueF = lambda p: self.f(self.x, *p)
-        self.trueF_new = lambda xp: self.f(xp[0], *xp[1])
-        self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.t))
-        self.jac = lambda p: fix_matrix(sym.lambdify((self.z, *self.t),
-                                                     self.J,
-                                                     'numpy')(self.x, *p)[0]).T
-        self.jac_new = lambda xp: fix_matrix(sym.lambdify((self.z, *self.t),
-                                                     self.J,
-                                                     'numpy')(xp[0], *xp[1])[0]).T
+        self.F = sym.lambdify((self.x_symbs, *self.theta_symbs), self.expr, 'numpy')
+        self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.theta_symbs))
+        self.jac_func = sym.lambdify((self.x_symbs, *self.theta_symbs), self.J, 'numpy')
         w = sym.symbols("y")
-        self.t0 = (sym.solve(sym.Eq(self.expr, w), self.t[0])[0]
-                   .subs({w: self.t[0]}))
+        self.t0 = (sym.solve(sym.Eq(self.expr, w), self.theta_symbs[0])[0]
+                   .subs({w: self.theta_symbs[0]}))
 
-    def func(self, theta):
-        '''
-        Calculate the residuals of the regression
-        model given an array of parameters values.
+    def f(self, x, theta):
+        return (self.F(x, *theta).T)[0]
 
-        Parameters
-        ----------
-        theta : array_like
-                 parameters values
-
-        Returns
-        -------
-        residuals of the regression model
-        '''
-        return self.trueF(theta) - self.y
+    def jac(self, x, theta):
+        return fix_matrix(self.jac_func(x, *theta))[0].T
 
     def rewrite(self, x):
         '''
@@ -97,14 +76,14 @@ class SymExpr:
         -------
         rewritten expression
         '''
-        t0 = self.t0.subs({self.z: x})
-        return SymExpr(self.expr.subs({self.t[0]: t0}), self.t, self.z, self.x, self.y)
+        t0 = self.t0.subs({self.x_symbs: x})
+        return SymExpr(self.expr.subs({self.theta_symbs[0]: t0}), self.theta_symbs, self.x_symbs)
 
 class SymExprMultivar:
     """Class with support to symbolic manipulation of a
     regression model model described as a string"""
 
-    def __init__(self, expr, theta_symbs, x_symbs, x, y):
+    def __init__(self, expr, theta_symbs, x_symbs):
         '''
         Creates an object containing support methods to
         evaluate and handle symbolic regression models.
@@ -124,46 +103,23 @@ class SymExprMultivar:
         y : array_like
              target points of the training set
         '''
-        self.npx = x
-        self.x = [x[:, i] for i in range(x.shape[1])]
-        self.y = y
-        self.m = x.shape[0]
-        self.n = len(theta_symbs)
         self.multivar = True
 
-        self.t = theta_symbs
-        self.z = x_symbs
+        self.theta_symbs = theta_symbs
+        self.x_symbs = x_symbs
         self.expr = expr
-        self.f = sym.lambdify((*self.z, *self.t), self.expr, 'numpy')
-        self.trueF = lambda p: self.f(*self.x, *p)
-        self.trueF_new = lambda xp: self.f(*xp[0], *xp[1])
-        self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.t))
-        self.jac = lambda p: fix_matrix(
-            sym.lambdify((*self.z, *self.t),
-                         self.J,
-                         'numpy')(*self.x, *p)[0]).T
-        self.jac_new = lambda xp: fix_matrix(sym.lambdify((*self.z, *self.t),
-                                                     self.J,
-                                                     'numpy')(*xp[0], *xp[1])[0]).T
+        self.F = sym.lambdify((*self.x_symbs, *self.theta_symbs), self.expr, 'numpy')
+        self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.theta_symbs))
+        self.jac_func = sym.lambdify((*self.x_symbs, *self.theta_symbs), self.J, 'numpy')
         w = sym.symbols("y")
-        self.t0 = (sym.solve(sym.Eq(self.expr, w), self.t[0])[0]
-                   .subs({w: self.t[0]}))
+        self.t0 = (sym.solve(sym.Eq(self.expr, w), self.theta_symbs[0])[0]
+                   .subs({w: self.theta_symbs[0]}))
 
-    def func(self, theta):
-        '''
-        Calculate the residuals of the regression
-        model given an array of parameters values.
+    def f(self, x, theta):
+        return self.F(*list(x.T), *theta)
 
-        Parameters
-        ----------
-        theta : array_like
-                 parameters values
-
-        Returns
-        -------
-        residuals of the regression model
-        '''
-        return self.trueF(theta) - self.y
+    def jac(self, x, theta):
+        return fix_matrix(self.jac_func(*list(x.T), *theta))[0].T
 
     def rewrite(self, x):
         '''
@@ -179,9 +135,9 @@ class SymExprMultivar:
         -------
         rewritten expression
         '''
-        t0 = self.t0.subs({self.z[j]: x[j]
-                           for j in range(len(self.z))})
-        return SymExprMultivar(self.expr.subs({self.t[0]: t0}), self.t, self.z, self.npx, self.y)
+        t0 = self.t0.subs({self.x_symbs[j]: x[j]
+                           for j in range(len(self.x_symbs))})
+        return SymExprMultivar(self.expr.subs({self.theta_symbs[0]: t0}), self.theta_symbs, self.x_symbs)
 
 def is_div_with_add(expr):
     '''
@@ -273,7 +229,7 @@ def get_coefs_from_expr(expr, i, can_replace, apply_simpl):
     return coefs, symbs, expr.func(*new_args), i
 
 
-def create_symbolic(model, x, y, apply_simpl=True):
+def create_symbolic(model, n_vars, apply_simpl=True):
     '''
     Gets an string representing the model and
     the data points and returns either SymExpr or
@@ -302,28 +258,21 @@ def create_symbolic(model, x, y, apply_simpl=True):
     with ProfileT
     '''
     expr = sym.sympify(model)
-    theta, x_vars, expr, n_thetas = get_coefs_from_expr(expr, 0, True, apply_simpl)
+    theta, x_vars_model, expr, n_thetas = get_coefs_from_expr(expr, 0, True, apply_simpl)
 
-    ixs = [int(xv[1:]) for xv in np.unique(x_vars)]
-    x_vars = [sym.Symbol(xs) for xs in np.unique(x_vars)]
+    x_vars = [f"x{i}" for i in range(n_vars)]
     theta_vars = [sym.Symbol(f"theta{i}") for i in range(n_thetas)]
 
-    if len(x_vars) == 0:
+    if len(x_vars_model) == 0:
         sys.exit("ERROR: Constant model!")
-    elif len(x_vars) == 1:
+    elif n_vars == 1:
         # if the model is univariate and the problem is univariate,
         # just create a SymExpr object
-        if len(x.shape) == 1:
-            expr = SymExpr(expr, theta_vars, x_vars[0], x, y)
-        # if the model is univariate and the data is not, create a SymExpr
-        # object and fix the data
-        else:
-            x_z = np.array(list(xi for xi in x[:, ixs[0]]))
-            expr = SymExpr(expr, theta_vars, x_vars, x_z, y)
+        expr = SymExpr(expr, theta_vars, x_vars[0])
     else:
         # if the model is multivariate, create
         # SymExprMultivar with the appropriate vars
-        expr = SymExprMultivar(expr, theta_vars, x_vars, x[:, ixs], y)
+        expr = SymExprMultivar(expr, theta_vars, x_vars)
 
     return expr, theta
 

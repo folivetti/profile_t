@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import scipy.linalg as la
 
-from scipy.optimize import least_squares
+from scipy.optimize import minimize
 from scipy.interpolate import CubicSpline
 from scipy import stats
 import warnings
@@ -30,7 +30,7 @@ __all__ = [
 class ProfileT:
     """Class for profile t calculation"""
 
-    def __init__(self, model, start_theta, prediction = False, correction = 0):
+    def __init__(self, model, likelihood, s_err=1.0):
         '''
         Compute the profile t function from the symbolic nonlinear
         regression model.
@@ -49,13 +49,30 @@ class ProfileT:
         OUTPUT TODO
         '''
         self.model = model
-        self.prediction = prediction
-        self.correction = correction
+        self.likelihood = likelihood
+        self.s_err = s_err
 
-        # apply least squares to the current model and numeric parameters to
-        # ensure the current theta represents the local optima.
-        opt = least_squares(model.func, start_theta, model.jac, method='lm')
+        self.m = None
+        self.n = None
+        self.theta = None
+        self.tau_max = None
+        self.is_fitted_ = False
+        self.has_profile_ = False
+
+    def fit(self, x, y, start_theta):
+        # minimize the negative log-likelihood
+        # ensure the current parameters values are the local optima.
+        self.m = x.shape[0]
+        self.n = len(start_theta)
+        f, jac = self.likelihood(self.model.func, x, y)
+        opt = minimize(f, start_theta, jac=jac, method='CG')
         self.theta = opt.x
+        self.is_fitted_ = True
+
+    def fit_profile(self, x, y, start_theta, ix):
+        # fits only once
+        if not self.is_fitted_:
+            self.fit(x, y, start_theta)
 
         # maximum value of tau for 99% confidence
         # using F-statistics with n, m-n degrees of freedom
@@ -63,7 +80,6 @@ class ProfileT:
                                            self.model.n,
                                            self.model.m - self.model.n)
                                )
-        #self.tau_max = stats.t.ppf(1 - 0.01/2, self.model.m - self.model.n)
 
         # the either object will contain None in left field
         # only when the process returned without error.
@@ -73,7 +89,7 @@ class ProfileT:
 
             self.calculate_statistics()
             if self.ssr <= 1e-15:
-                sys.exit("The model has no error and it is perfect as it is!")
+                sys.exit("The model has a perfect fit to the data and thus there is no uncertainties.")
 
             either_tp = self.calculate_data_points()
         self.proft = either_tp.right
