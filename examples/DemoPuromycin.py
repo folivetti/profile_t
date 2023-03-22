@@ -21,7 +21,8 @@ def DemoPuromycin():
     x_syms = sym.symbols("x")
     x = np.array([0.02, 0.02, 0.06, 0.06, 0.11, 0.11, 0.22, 0.22, 0.56, 0.56, 1.10, 1.10])
     y = np.array([76, 47, 97, 107, 123, 139, 159, 152, 191, 201, 207, 200])  
-    expr, theta = create_symbolic('205.1*x0 / (0.08 + x0)', x, y, False)
+    expr, theta = create_symbolic('205.1*x0 / (0.08 + x0^2)', x, y, False)
+    #expr, theta = create_symbolic('205.1*x0', x, y, False)
 
     # create profile object and calculate the ci with linear approx. and without
     profile = ProfileT(expr, theta)
@@ -31,10 +32,14 @@ def DemoPuromycin():
     #profile.report_prediction_interval(x, 0.01, True)
     print("\nPrediction intervals (profile):")
     #profile.report_prediction_interval(x, 0.01)
+    print("\nConfidence intervals of new points (linear):")
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.1, True)
+    print("\nConfidence intervals of new points (profile):")
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.1, False)
     print("\nPrediction intervals of new points (linear):")
-    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.01, True, True)
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.1, True, True)
     print("\nPrediction intervals of new points (profile):")
-    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.01, False, True)
+    profile.report_prediction_interval(np.array([0.04, 0.15, 0.6]), 0.1, False, True)
     # create the plots
     plot_all_theta_theta(profile, "Puromycin", 0.01)
     plot_all_tau_theta(profile, "Puromycin")

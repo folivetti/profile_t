@@ -151,7 +151,7 @@ class ProfileT:
                 print("Found a better local model, restarting...")
                 return Either(left=opt.x)
 
-            s = self.s if self.correction == 0.0 else self.s * np.sqrt(self.model.m - self.model.n + 1) 
+            s = self.s if self.correction == 0.0 else self.s # * np.sqrt(self.model.m - self.model.n + 1) 
             tau_i = np.sign(delta) * np.sqrt(ssr_cond - self.ssr) / s
 
             inv_slope = tau_i * self.s * self.s
@@ -163,7 +163,7 @@ class ProfileT:
             thetas.append(opt.x.copy())
             deltas.append((self.theta[idx] - opt.x[idx])/self.se[idx])
 
-            if np.abs(tau_i) > self.tau_max: # + self.correction:
+            if np.abs(tau_i) > self.tau_max: #+ (self.s if self.correction else 0.0):
                 break
 
         return Either(right=(taus, thetas, deltas))
@@ -312,7 +312,7 @@ class ProfileT:
                  upper bounds for each data point
         '''
         y_pred = np.array([self.model.trueF_new((x, self.theta)) for x in xs])
-        f_dist = np.sqrt(stats.f.ppf(1 - alpha, self.model.n, self.model.m - self.model.n))
+        f_dist = np.sqrt(stats.f.ppf(1 - alpha/2.0, self.model.n, self.model.m - self.model.n))
         t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
         correction = self.s if newpoint else 0
 
@@ -326,8 +326,9 @@ class ProfileT:
             for i,x in enumerate(xs):
                theta = self.theta.copy()
                theta[0] = y_pred[i]
-               profile_pred = ProfileT(self.model.rewrite(x), theta, True, correction)
-               lower[i], upper[i] = profile_pred.spline_tau2theta[0](-f_dist), profile_pred.spline_tau2theta[0](f_dist)
+               profile_pred = ProfileT(self.model.rewrite(x), theta, True, 0.0)
+               lower[i], upper[i] = profile_pred.spline_tau2theta[0](-t_dist) - correction*t_dist, profile_pred.spline_tau2theta[0](t_dist) + correction*t_dist
+
         return lower, upper
 
     def create_splines(self):

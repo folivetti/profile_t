@@ -303,6 +303,7 @@ def create_symbolic(model, x, y, apply_simpl=True):
     '''
     expr = sym.sympify(model)
     theta, x_vars, expr, n_thetas = get_coefs_from_expr(expr, 0, True, apply_simpl)
+
     ixs = [int(xv[1:]) for xv in np.unique(x_vars)]
     x_vars = [sym.Symbol(xs) for xs in np.unique(x_vars)]
     theta_vars = [sym.Symbol(f"theta{i}") for i in range(n_thetas)]
