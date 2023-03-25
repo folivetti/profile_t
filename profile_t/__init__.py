@@ -114,10 +114,11 @@ class ProfileT:
         # ensure the current parameters values are the local optima.
         self.m = x.shape[0]
         self.f, self.jac, self.hessian = self.likelihood(self.model, x, y, self.s_err)
-        opt = minimize(self.f, self.theta, jac=self.jac, method='CG')
+        opt = minimize(self.f, self.theta, jac=self.jac, method='Nelder-Mead')
+        print(opt)
         self.theta = opt.x
         self.is_fitted_ = True
-        print(self.theta)
+        print(self.theta, self.f(self.theta))
         #self.calculate_statistics(y)
         #if self.ssr <= 1e-15:
         #    warnings.warn("The model has a perfect fit to the data and thus there are no uncertainties.")

@@ -21,7 +21,7 @@ def DemoPuromycin():
     x_syms = sym.symbols("x")
     x = np.array([0.02, 0.02, 0.06, 0.06, 0.11, 0.11, 0.22, 0.22, 0.56, 0.56, 1.10, 1.10])
     y = np.array([76, 47, 97, 107, 123, 139, 159, 152, 191, 201, 207, 200])  
-    expr, theta = create_symbolic('205.1*x0 / (0.08 + x0^2)', 1, False)
+    expr, theta = create_symbolic('205.1*x0 / (0.08 + x0)', 1, False)
     #expr, theta = create_symbolic('205.1*x0', x, y, False)
 
     # create profile object and calculate the ci with linear approx. and without
