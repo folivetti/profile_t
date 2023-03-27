@@ -51,16 +51,21 @@ class SymExpr:
         self.expr = expr
         self.F = sym.lambdify((self.x_symbs, *self.theta_symbs), self.expr, 'numpy')
         self.J = sym.Matrix([self.expr]).jacobian(sym.Matrix(self.theta_symbs))
+        self.H = sym.hessian(self.expr, self.theta_symbs)
         self.jac_func = sym.lambdify((self.x_symbs, *self.theta_symbs), self.J, 'numpy')
+        self.h = sym.lambdify((self.x_symbs, *self.theta_symbs), self.H, 'numpy')
         w = sym.symbols("y")
         self.t0 = (sym.solve(sym.Eq(self.expr, w), self.theta_symbs[0])[0]
                    .subs({w: self.theta_symbs[0]}))
 
     def f(self, x, theta):
-        return (self.F(x, *theta).T)[0]
+        return (self.F(x, *theta).T)
 
     def jac(self, x, theta):
         return fix_matrix(self.jac_func(x, *theta))[0].T
+
+    def hess(self, x, theta):
+        return self.h(x, *theta)
 
     def rewrite(self, x):
         '''

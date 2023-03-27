@@ -1,0 +1,38 @@
+theta: [2.12683666e+02 6.41211620e-02]
+SSR 1195.4488144619193 s^2 119.54488144619191
+theta	Estimate	Std. Error.	Lower		Upper		Corr. Matrix
+0	2.126837e+02	6.947151e+00	1.906663e+02	2.347011e+02	[1.   0.77]
+1	6.412116e-02	8.280937e-03	3.787662e-02	9.036571e-02	[0.77 1.  ]
+theta: [2.12683666e+02 6.41211620e-02]
+SSR 1195.4488144619193 s^2 119.54488144619191
+theta	Estimate	Std. Error.	Lower		Upper		Corr. Matrix
+0	2.126837e+02	6.947151e+00	1.938573e+02	2.333787e+02	[1.   0.77]
+1	6.412116e-02	8.280937e-03	4.347273e-02	9.216167e-02	[0.77 1.  ]
+
+Prediction intervals (linear):
+
+Prediction intervals (profile):
+
+Confidence intervals of new points (linear):
+y_pred		low		high
+8.170622e+01	7.304950e+01	9.036294e+01
+1.489930e+02	1.422169e+02	1.557691e+02
+1.921490e+02	1.836240e+02	2.006740e+02
+
+Confidence intervals of new points (profile):
+y_pred		low		high
+8.170622e+01	7.293208e+01	9.099898e+01
+1.489930e+02	1.419863e+02	1.557723e+02
+1.921490e+02	1.835162e+02	2.007979e+02
+
+Prediction intervals of new points (linear):
+y_pred		low		high
+8.170622e+01	5.323267e+01	1.101798e+02
+1.489930e+02	1.224000e+02	1.755859e+02
+1.921490e+02	1.638071e+02	2.204908e+02
+
+Prediction intervals of new points (profile):
+y_pred		low		high
+8.170622e+01	5.311525e+01	1.108158e+02
+1.489930e+02	1.221695e+02	1.755891e+02
+1.921490e+02	1.636993e+02	2.206147e+02

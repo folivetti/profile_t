@@ -30,30 +30,87 @@ __all__ = [
     "BernoulliLikelihood"
 ]
 
-def GaussianLikelihood(model, x, y, s_err):
-    s_err_sq = s_err * s_err
+class GaussianLikelihood:
+    def __init__(self, model, s_noise=None):
+        self.model = model
+        self.s_noise = 1.0 if s_noise is None else s_noise
+        self.theta = None
+        self.has_s_noise_ = False if s_noise is None else True
+        self.is_fitted_ = False
 
-    def f(theta):
-        y_pred = model.f(x, theta)
-        res = y - y_pred
-        return 0.5 * (res * res).sum() / s_err_sq
+    def fit(self, x, y, theta0):
+        self.x = x
+        self.y = y
+        self.m = len(y)
+        self.n = len(theta0)
 
-    def j(theta):
-        y_pred = model.f(x, theta)
-        jac = model.jac(x, theta)
-        res = y_pred - y
-        return (res @ jac) / s_err_sq
+        def fj(theta):
+            y_pred = self.model.f(self.x, theta)
+            residue = self.y - y_pred
+            jac = self.model.jac(self.x, theta)
+            negLL = 0.5 * np.square(residue).sum() / self.s_noise
+            grad = (-residue @ jac) / self.s_noise
+            return negLL, grad
 
-    def h(theta):
-        jac = model.jac(x, theta)
-        hess = np.zeros((len(theta), len(theta)))
-        for i in range(len(theta)):
-            for j in range(len(theta)):
-                hess[i, j] = (jac[:, i] * jac[:, j]).sum() / s_err_sq
-        return hess
+        opt = minimize(fj, theta0, jac=True, method='CG')
+        self.theta = opt.x
+        if not self.has_s_noise_:
+            self.s_noise = np.square(self.y - self.model.f(self.x, self.theta)).sum() / (self.m - self.n)
+        self.is_fitted_ = True
 
-    return f, j, h
+    def predict(self, x):
+        if not self.is_fitted_:
+            raise RuntimeError("You must first fit the parameters.")
+        return self.model.f(self.x, self.theta)
 
+    def hessian(self):
+        if not self.is_fitted_:
+            raise RuntimeError("You must first fit the parameters.")
+        y_pred = self.model.f(self.x, self.theta)
+        res = self.y - y_pred
+        jac = self.model.jac(self.x, self.theta)
+        hess = sum(res[i]*self.model.hess(self.x[i], self.theta) for i in range(self.m))
+        for k in range(self.m):
+            for i in range(self.n):
+                for j in range(self.n):
+                    hess[i, j] += jac[k, i] * jac[k, j]
+        return hess / self.s_noise
+
+    def negLogLikelihood(self, theta):
+        if not self.is_fitted_:
+            raise RuntimeError("You must first fit the parameters.")
+        y_pred = self.model.f(self.x, theta)
+        residue = self.y - y_pred
+        return 0.5 * np.square(residue).sum() / self.s_noise
+
+    def negLogLikelihoodGrad(self, theta):
+        if not self.is_fitted_:
+            raise RuntimeError("You must first fit the parameters.")
+        y_pred = self.model.f(self.x, theta)
+        residue = self.y - y_pred
+        jac = self.model.jac(self.x, theta)
+        return (-residue @ jac) / self.s_noise
+
+    def minNegLogLikelihood(self):
+        if not self.is_fitted_:
+            raise RuntimeError("You must first fit the parameters.")
+        return self.negLogLikelihood(self.theta)
+
+    def refit(self, t0, idx):
+        def fj(theta):
+            y_pred = self.model.f(self.x, theta)
+            residue = self.y - y_pred
+            jac = self.model.jac(self.x, theta)
+            negLL = 0.5 * np.square(residue).sum() / self.s_noise
+            grad = (-residue @ jac) / self.s_noise
+            grad[idx] = 0.0
+            return negLL, grad
+
+        theta0 = self.theta.copy()
+        theta0[idx] = t0
+        opt = minimize(fj, theta0, jac=True, method='CG')
+        return opt.x
+         
 def BernoulliLikelihood(model, x, y, s_err):
     def f(theta):
         y_pred = model.f(x, theta)
@@ -80,7 +137,7 @@ def BernoulliLikelihood(model, x, y, s_err):
 class ProfileT:
     """Class for profile t calculation"""
 
-    def __init__(self, model, start_theta, likelihood, s_err=1.0):
+    def __init__(self, model, start_theta, likelihood):
         '''
         Compute the profile t function from the symbolic nonlinear
         regression model.
@@ -100,42 +157,42 @@ class ProfileT:
         '''
         self.model = model
         self.likelihood = likelihood
-        self.s_err = s_err
         self.theta = start_theta
         self.n = len(self.theta)
 
         self.m = None
         self.tau_max = None
         self.is_fitted_ = False
-        self.profiles = [None for _ in range(self.n)]
+        self.profiles = {}
+        self.spline_tau2theta = {}
+        self.spline_theta2tau = {}
 
     def fit(self, x, y):
         # minimize the negative log-likelihood
         # ensure the current parameters values are the local optima.
         self.m = x.shape[0]
-        self.f, self.jac, self.hessian = self.likelihood(self.model, x, y, self.s_err)
-        opt = minimize(self.f, self.theta, jac=self.jac, method='Nelder-Mead')
-        print(opt)
-        self.theta = opt.x
+        self.likelihood.fit(x, y, self.theta)
+        self.theta = self.likelihood.theta
         self.is_fitted_ = True
-        print(self.theta, self.f(self.theta))
-        #self.calculate_statistics(y)
-        #if self.ssr <= 1e-15:
-        #    warnings.warn("The model has a perfect fit to the data and thus there are no uncertainties.")
+        self.calculate_statistics()
+
+    def fit_all_profiles(self):
+        for ix in range(self.n):
+            self.fit_profile(ix)
 
     def fit_profile(self, ix):
         # fits only once
         if not self.is_fitted_:
             raise RuntimeError("You must first fit the parameters.")
 
-        if self.profiles[ix] is not None:
+        if ix in self.profiles:
             return
 
         # maximum value of tau for 99% confidence
         # using F-statistics with n, m-n degrees of freedom
         self.tau_max = np.sqrt(stats.f.ppf(1 - 0.01,
-                                           self.model.n,
-                                           self.model.m - self.model.n)
+                                           self.n,
+                                           self.m - self.n)
                                )
 
         # the either object will contain None in left field
@@ -144,8 +201,8 @@ class ProfileT:
         if either_tp.left is not None:
             self.theta = either_tp.left
             self.is_fitted_ = False
-            self.profiles = [None for _ in range(self.n)]
-            warnings.warn("A better parameter was found, refit the model.")
+            self.profiles = {}
+            warnings.warn(f"A better parameter was found, refit the model with starting theta = {self.theta}.")
             return
 
         self.profiles[ix] = either_tp.right
@@ -155,12 +212,6 @@ class ProfileT:
         '''
         Calculates the data points for numeric parameter idx.
         '''
-
-        def fixed_jac(theta):
-            J = self.jac(theta)
-            J[idx] = 0.0
-            return J
-
         delta = -self.se[idx]/step
 
         # First we generate the data points starting from -delta,
@@ -168,10 +219,10 @@ class ProfileT:
         # Finally, we concatenate the data points together
         # with the trivial point where tau = 0.
 
-        res = self.points_from_delta(delta, idx, fixed_jac, kmax)
+        res = self.points_from_delta(delta, idx, kmax)
         if res.left is None:
             tau_1, m_1, deltas_1 = res.right
-            res = self.points_from_delta(-delta, idx, fixed_jac, kmax)
+            res = self.points_from_delta(-delta, idx, kmax)
             if res.left is None:
                 tau_2, m_2, deltas_2 = res.right
             else:
@@ -187,7 +238,7 @@ class ProfileT:
                              np.array(m_1 + [self.theta] + m_2)[ix_tau, :].T,
                              np.array(deltas_1 + [0] + deltas_2)[ix_tau]))
 
-    def points_from_delta(self, delta, idx, fixed_jac, kmax):
+    def points_from_delta(self, delta, idx, kmax):
         '''
         Calculates the data points for an initial delta.
         '''
@@ -202,70 +253,51 @@ class ProfileT:
         # used to calculate the CI.
         for _ in range(kmax):
             t += inv_slope
-            theta_cond[idx] = self.theta[idx] + delta*t
-            opt = minimize(self.f, theta_cond, fixed_jac, method='CG')
-            residue = self.model.y - self.model.trueF(opt.x)
-            ssr_cond = np.square(residue).sum()
+            theta_cond = self.likelihood.refit(self.likelihood.theta[idx] + delta*t, idx)
+            nnlOpt = self.likelihood.minNegLogLikelihood()
+            nnl = self.likelihood.negLogLikelihood(theta_cond)
 
-            if (ssr_cond-self.ssr) < 0:
-                return Either(left=opt.x)
+            if nnl < nnlOpt:
+                return Either(left=theta_cond)
 
-            tau_i = np.sign(delta) * np.sqrt(ssr_cond - self.ssr) / self.s
+            tau_i = np.sign(delta) * np.sqrt(2*nnl - 2*nnlOpt)
+            zv = self.likelihood.negLogLikelihoodGrad(theta_cond)[idx]
 
-            inv_slope = tau_i * self.s * self.s
-            inv_slope = inv_slope/(self.se[idx] *
-                                   residue.dot(self.model.jac(opt.x)[:, idx]))
+            inv_slope = np.abs(tau_i/(self.se[idx] * zv))
             inv_slope = min(4.0, max(np.abs(inv_slope), 1.0/16))
 
             taus.append(tau_i)
-            thetas.append(opt.x.copy())
-            deltas.append((self.theta[idx] - opt.x[idx])/self.se[idx])
+            thetas.append(theta_cond.copy())
+            deltas.append((self.theta[idx] - theta_cond[idx])/self.se[idx])
 
             if np.abs(tau_i) > self.tau_max:
                 break
 
         return Either(right=(taus, thetas, deltas))
 
-    def calculate_statistics(self, y):
+    def calculate_statistics(self):
         """
         Calculates the following statistics about the model:
 
             * se : standard error
-            * res_std_error : residual standard error
-            * ssr : sum of squares residuals
-            * s : residual standard error
             * corr : correlation between coefficients
         """
-        y_hat = self.f(self.theta)
-        self.ssr = np.square(y_hat - y).sum()
 
-        J = self.jac(self.theta)
+        H = self.likelihood.hessian()
 
         # we must use economic mode so R will be a square matrix
-        _, R = la.qr(J, mode='economic')
-        self.R = la.inv(R)
+        R = la.cholesky(H, lower=True)
+        self.invH = la.solve(R @ R.T, np.eye(len(self.theta))) # la.inv(H)
+        self.se = np.sqrt(np.diag(self.invH))
 
-        self.s = np.sqrt(self.ssr/(self.m-self.n))
-        self.se = np.sqrt(np.square(np.triu(self.R)).sum(axis=1))
-        L = (np.triu(self.R).T/self.se).T
-        self.se = self.s*self.se
+        L = np.zeros((len(self.theta), len(self.theta)))
+        for i in range(len(self.theta)):
+            for j in range(len(self.theta)):
+                L[i, j] = self.invH[j, i] / self.se[i] / self.se[j]
 
-        self.corr = L@L.T
-        j_r = J@R
-        self.res_std_error = self.s * np.sqrt(np.square(j_r).sum(axis=1))
+        self.corr = L
 
-    def calculate_statistics_newpoints(self, x):
-        """
-        Calculates the following statistics about the model:
-
-            * res_std_error : residual standard error
-        """
-        J = self.model.jac(x, self.theta)
-
-        j_r = J @ self.R
-        return self.s * np.sqrt(np.square(j_r).sum(axis=1))
-
-    def report_parameters_ci(self, alpha, use_linear=False):
+    def report_parameters_ci(self, alpha, use_laplace=False):
         '''
         Prints out the model ssr and s^2 and the confidence interval.
 
@@ -278,16 +310,16 @@ class ProfileT:
         '''
 
         print(f"theta: {self.theta}")
-        print(f"SSR {self.ssr} s^2 {self.s*self.s}")
+        #print(f"SSR {self.ssr} s^2 {self.s*self.s}")
 
-        lower, upper = self.get_params_intervals(alpha, use_linear)
+        lower, upper = self.get_params_intervals(alpha, use_laplace)
         print("theta\tEstimate\tStd. Error.\tLower\t\tUpper\t\t"
               "Corr. Matrix")
         for i in range(self.n):
             print(f"{i}\t{self.theta[i]:e}\t{self.se[i]:e}\t"
                   f"{lower[i]:e}\t{upper[i]:e}\t{np.round(self.corr[i,:],2)}")
 
-    def report_prediction_interval(self, xs, alpha, use_linear=False, newpoint=False):
+    def report_prediction_ci(self, xs, alpha, use_laplace=False):
         '''
         Prints out the prediction intervals for the data points
         ixs.
@@ -301,14 +333,14 @@ class ProfileT:
         use_linear : bool (default False)
                      whether to use linear instead of profile t
         '''
-        lower, upper = self.get_prediction_intervals(alpha, xs, use_linear, newpoint)
-        ypred = np.array([self.model.trueF_new((x, self.theta)) for x in xs])
+        lower, upper = self.get_prediction_ci(alpha, xs, use_laplace)
+        y_pred = self.likelihood.predict(xs)
         print("y_pred\t\tlow\t\thigh")
-        for i, x in enumerate(xs):
-            print(f"{ypred[i]:e}\t"
+        for i, _ in enumerate(xs):
+            print(f"{y_pred[i]:e}\t"
                   f"{lower[i]:e}\t{upper[i]:e}")
 
-    def get_params_intervals(self, alpha, use_linear=False):
+    def get_params_intervals(self, alpha, use_laplace=False):
         '''
         Returns the lower and upper bounds of the
         parameters intervals with confidence alpha.
@@ -328,7 +360,7 @@ class ProfileT:
                  upper bounds for each parameter
         '''
         t_dist = stats.t.ppf(1 - alpha/2.0, self.m - self.n)
-        if use_linear:
+        if use_laplace:
             lower = self.theta - self.se * t_dist
             upper = self.theta + self.se * t_dist
         else:
@@ -336,7 +368,7 @@ class ProfileT:
             upper = np.array(list(self.spline_tau2theta[i](t_dist) for i in range(self.n)))
         return lower, upper
 
-    def get_prediction_intervals(self, alpha, xs, use_linear=False, newpoint=False):
+    def get_prediction_ci(self, alpha, x, use_laplace):
         '''
         Returns the lower and upper bounds of the
         prediction intervals with confidence alpha.
@@ -357,14 +389,21 @@ class ProfileT:
         upper : array_like
                  upper bounds for each data point
         '''
-        y_pred = np.array([self.model.trueF_new((x, self.theta)) for x in xs])
-        t_dist = stats.t.ppf(1 - alpha/2.0, self.model.m - self.model.n)
-        correction = self.s if newpoint else 0
+        y_pred = self.likelihood.predict(x)
+        t_dist = stats.t.ppf(1 - alpha/2.0, self.m - self.n)
 
-        if use_linear:
-            res_std_error = self.calculate_statistics_newpoints(xs)
-            lower = y_pred - (res_std_error + correction) * t_dist
-            upper = y_pred + (res_std_error + correction) * t_dist
+        if use_laplace:
+            jac = self.likelihood.model.jac(x, self.likelihood.theta)
+            print(jac)
+            res_std_error = np.zeros(len(y_pred))
+            for i in range(len(y_pred)):
+                row = np.array([(self.invH[j, :] * jac[i, :]).sum()
+                               for j in range(self.likelihood.n)])
+                print(row)
+                res_std_error[i] = (jac[i, :] * row).sum()
+
+            lower = y_pred - res_std_error * t_dist
+            upper = y_pred + res_std_error * t_dist
         else:
             lower, upper = np.zeros(np.max(len(xs))+1), np.zeros(np.max(len(xs))+1)
             for i,x in enumerate(xs):
@@ -381,23 +420,21 @@ class ProfileT:
         interpolating the calculated data points
         tau and theta.
         '''
-        self.spline_tau2theta = []
-        self.spline_theta2tau = []
-        tau = self.proft[idx][0]
-        theta = self.proft[idx][1][idx, :]
+        tau = self.profiles[idx][0]
+        theta = self.profiles[idx][1][idx, :]
         sorted_idx = theta.argsort()
 
         if len(tau) < 2:
-            self.spline_tau2theta.append(CubicSpline([0, 1],
+            self.spline_tau2theta[idx] = CubicSpline([0, 1],
                                                      [-self.se[idx],
-                                                      self.se[idx]]))
-            self.spline_theta2tau.append(CubicSpline([-self.se[idx],
+                                                      self.se[idx]])
+            self.spline_theta2tau[idx] = CubicSpline([-self.se[idx],
                                                       self.se[idx]],
-                                                     [0, 1]))
+                                                     [0, 1])
         else:
-            self.spline_tau2theta.append(CubicSpline(tau, theta))
-            self.spline_theta2tau.append(CubicSpline(theta[sorted_idx],
-                                                     tau[sorted_idx]))
+            self.spline_tau2theta[idx] = CubicSpline(tau, theta)
+            self.spline_theta2tau[idx] = CubicSpline(theta[sorted_idx],
+                                                     tau[sorted_idx])
 
     def splines_sketches(self, tau_scale):
         '''
@@ -410,14 +447,13 @@ class ProfileT:
                     matrix of spline functions for
                     every pair of parameters.
         '''
-        n = 1 if self.prediction else self.model.n
-        spline_g = [[lambda x: x for _ in range(n)] for _ in range(n)]
-        for p_idx in range(n):
-            for q_idx in range(n):
+        spline_g = [[lambda x: x for _ in range(self.n)] for _ in range(self.n)]
+        for p_idx in range(self.n):
+            for q_idx in range(self.n):
                 if p_idx == q_idx:
                     continue
-                theta_q = self.proft[q_idx][1][p_idx, :]
-                tau_q = self.proft[q_idx][0]
+                theta_q = self.profiles[q_idx][1][p_idx, :]
+                tau_q = self.profiles[q_idx][0]
 
                 gpq = self.spline_theta2tau[p_idx](theta_q)/tau_scale
                 idx = np.abs(gpq) < 1
